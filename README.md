@@ -34,4 +34,6 @@ Be sure to define the `GITLAB_PASSWORD` secret.
 
 # Changelog from SvanBoxel/gitlab-mirror-and-ci-action
 
-2020-05-18: Add -f option on git push. With this option, we can push force on github, and the push will be propagated to our gitlab as well. Since our gitlab instance shall not be modified by anyone but github action, it should be running fine
+`2020-05-18`:
+    - Add -f option on git push. With this option, we can push force on github, and the push will be propagated to our gitlab as well. Since our gitlab instance shall not be modified by anyone but github action, it should be running fine
+    - Shellchecked the entrypoint. Add -xe options

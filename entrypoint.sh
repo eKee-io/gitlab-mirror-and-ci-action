@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
-set -u
+set -uxe
 
 DEFAULT_POLL_TIMEOUT=10
 POLL_TIMEOUT=${POLL_TIMEOUT:-$DEFAULT_POLL_TIMEOUT}
@@ -9,14 +9,14 @@ git checkout "${GITHUB_REF:11}"
 
 branch=$(git symbolic-ref --short HEAD)
 
-sh -c "git config --global credential.username $GITLAB_USERNAME"
-sh -c "git config --global core.askPass /cred-helper.sh"
-sh -c "git config --global credential.helper cache"
-sh -c "git remote add mirror $*"
-sh -c "echo pushing to $branch branch at $(git remote get-url --push mirror)"
-sh -c "git push mirror $branch -f"
+git config --global credential.username "$GITLAB_USERNAME"
+git config --global core.askPass /cred-helper.sh
+git config --global credential.helper cache
+git remote add mirror "$@"
+echo pushing to "$branch" branch at "$(git remote get-url --push mirror)"
+git push mirror "$branch" -f
 
-sleep $POLL_TIMEOUT
+sleep "$POLL_TIMEOUT"
 
 pipeline_id=$(curl --header "PRIVATE-TOKEN: $GITLAB_PASSWORD" --silent "https://${GITLAB_HOSTNAME}/api/v4/projects/${GITLAB_PROJECT_ID}/repository/commits/${branch}" | jq '.last_pipeline.id')
 
@@ -28,27 +28,27 @@ ci_status="pending"
 
 until [[ "$ci_status" != "pending" && "$ci_status" != "running" ]]
 do
-   sleep $POLL_TIMEOUT
+   sleep "$POLL_TIMEOUT"
    ci_output=$(curl --header "PRIVATE-TOKEN: $GITLAB_PASSWORD" --silent "https://${GITLAB_HOSTNAME}/api/v4/projects/${GITLAB_PROJECT_ID}/pipelines/${pipeline_id}")
    ci_status=$(jq -n "$ci_output" | jq -r .status)
    ci_web_url=$(jq -n "$ci_output" | jq -r .web_url)
-   
+
    echo "Current pipeline status: ${ci_status}"
    if [ "$ci_status" = "running" ]
    then
      echo "Checking pipeline status..."
-     curl -d '{"state":"pending", "target_url": "'${ci_web_url}'", "context": "gitlab-ci"}' -H "Authorization: token ${GITHUB_TOKEN}"  -H "Accept: application/vnd.github.antiope-preview+json" -X POST --silent "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}"  > /dev/null 
+     curl -d '{"state":"pending", "target_url": "'"${ci_web_url}"'", "context": "gitlab-ci"}' -H "Authorization: token ${GITHUB_TOKEN}"  -H "Accept: application/vnd.github.antiope-preview+json" -X POST --silent "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}"  > /dev/null
    fi
 done
 
 echo "Pipeline finished with status ${ci_status}"
-  
+
 if [ "$ci_status" = "success" ]
-then 
-  curl -d '{"state":"success", "target_url": "'${ci_web_url}'", "context": "gitlab-ci"}' -H "Authorization: token ${GITHUB_TOKEN}"  -H "Accept: application/vnd.github.antiope-preview+json" -X POST --silent "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" 
+then
+  curl -d '{"state":"success", "target_url": "'"${ci_web_url}"'", "context": "gitlab-ci"}' -H "Authorization: token ${GITHUB_TOKEN}"  -H "Accept: application/vnd.github.antiope-preview+json" -X POST --silent "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}"
   exit 0
 elif [ "$ci_status" = "failed" ]
-then 
-  curl -d '{"state":"failure", "target_url": "'${ci_web_url}'", "context": "gitlab-ci"}' -H "Authorization: token ${GITHUB_TOKEN}"  -H "Accept: application/vnd.github.antiope-preview+json" -X POST --silent "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" 
+then
+  curl -d '{"state":"failure", "target_url": "'"${ci_web_url}"'", "context": "gitlab-ci"}' -H "Authorization: token ${GITHUB_TOKEN}"  -H "Accept: application/vnd.github.antiope-preview+json" -X POST --silent "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}"
   exit 1
 fi
