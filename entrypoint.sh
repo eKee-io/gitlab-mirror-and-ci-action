@@ -4,6 +4,7 @@ set -uxe
 
 DEFAULT_POLL_TIMEOUT=10
 POLL_TIMEOUT=${POLL_TIMEOUT:-$DEFAULT_POLL_TIMEOUT}
+RUN_CI=${GITLAB_RUN_CI:-"true"}
 
 git checkout "${GITHUB_REF:11}"
 
@@ -15,6 +16,11 @@ git config --global credential.helper cache
 git remote add mirror "$@"
 echo pushing to "$branch" branch at "$(git remote get-url --push mirror)"
 git push mirror "$branch" -f
+
+if [ "${RUN_CI}" = "false" ]; then
+    echo "No running the CI: all things done !"
+    exit 0
+fi
 
 sleep "$POLL_TIMEOUT"
 

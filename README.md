@@ -28,6 +28,7 @@ jobs:
         GITLAB_PASSWORD: ${{ secrets.GITLAB_PASSWORD }} // Generate here: https://gitlab.com/profile/personal_access_tokens
         GITLAB_PROJECT_ID: "<GitLab project ID>"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} // https://help.github.com/en/articles/virtual-environments-for-github-actions#github_token-secret
+        GITLAB_RUN_CI: "true"
 ```
 
 Be sure to define the `GITLAB_PASSWORD` secret.
@@ -37,3 +38,5 @@ Be sure to define the `GITLAB_PASSWORD` secret.
 `2020-05-18`:
     - Add -f option on git push. With this option, we can push force on github, and the push will be propagated to our gitlab as well. Since our gitlab instance shall not be modified by anyone but github action, it should be running fine
     - Shellchecked the entrypoint. Add -xe options
+`2020-05-26`:
+    - Add the `GITLAB_RUN_CI` env var to trigger only the sync job
