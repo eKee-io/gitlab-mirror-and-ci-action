@@ -17,7 +17,7 @@ git config --global core.askPass /cred-helper.sh
 git config --global credential.helper cache
 git remote add mirror "$@"
 echo pushing to "$branch" branch at "$(git remote get-url --push mirror)"
-git push mirror "$branch" -f
+git push mirror "$branch" -f --tags
 
 if [ "${RUN_CI}" = "false" ]; then
     echo "No running the CI: all things done !"
