@@ -6,9 +6,11 @@ DEFAULT_POLL_TIMEOUT=10
 POLL_TIMEOUT=${POLL_TIMEOUT:-$DEFAULT_POLL_TIMEOUT}
 RUN_CI=${GITLAB_RUN_CI:-"true"}
 
-git checkout "${GITHUB_REF:11}"
+branch=$(git branch -a --contains HEAD --format '%(refname:short)' | cut -f 2 -d$'\n' | cut -f 2 -d '/')
+echo "${branch}"
+git checkout "${branch}"
 
-branch=$(git symbolic-ref --short HEAD)
+#branch=$(git symbolic-ref --short HEAD)
 
 git config --global credential.username "$GITLAB_USERNAME"
 git config --global core.askPass /cred-helper.sh
