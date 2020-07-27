@@ -6,6 +6,8 @@ DEFAULT_POLL_TIMEOUT=10
 POLL_TIMEOUT=${POLL_TIMEOUT:-$DEFAULT_POLL_TIMEOUT}
 RUN_CI=${GITLAB_RUN_CI:-"true"}
 
+echo "$(git branch -a --contains HEAD --format '%(refname:short)')"
+echo "${GITHUB_REF}"
 branch=$(git branch -a --contains HEAD --format '%(refname:short)' | cut -f 2 -d$'\n' | cut -f 2 -d '/')
 echo "${branch}"
 git checkout "${branch}"
