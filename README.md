@@ -40,3 +40,5 @@ Be sure to define the `GITLAB_PASSWORD` secret.
     - Shellchecked the entrypoint. Add -xe options
 `2020-05-26`:
     - Add the `GITLAB_RUN_CI` env var to trigger only the sync job
+2020-07:
+    - Add a detection of events triggered by github's `pull_requests` and `create.tag`

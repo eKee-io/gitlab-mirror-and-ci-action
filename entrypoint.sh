@@ -6,8 +6,13 @@ DEFAULT_POLL_TIMEOUT=10
 POLL_TIMEOUT=${POLL_TIMEOUT:-$DEFAULT_POLL_TIMEOUT}
 RUN_CI=${GITLAB_RUN_CI:-"true"}
 
-echo "$(git branch -a --contains HEAD --format '%(refname:short)')"
 echo "${GITHUB_REF}"
+if [ "$(echo "${GITHUB_REF}" | grep -oE 'pull/')" == "pull/" ]; then
+    echo "Github PR detected. Get one commit above to avoid being on the weird merge commit"
+    git status
+    git checkout HEAD^2
+    git status
+fi
 branch=$(git branch -a --contains HEAD --format '%(refname:short)' | cut -f 2 -d$'\n' | cut -f 2 -d '/')
 echo "${branch}"
 git checkout "${branch}"
