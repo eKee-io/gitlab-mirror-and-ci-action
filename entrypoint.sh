@@ -5,6 +5,11 @@ set -uxe
 DEFAULT_POLL_TIMEOUT=10
 POLL_TIMEOUT=${POLL_TIMEOUT:-$DEFAULT_POLL_TIMEOUT}
 RUN_CI=${GITLAB_RUN_CI:-"true"}
+SKIP_POLL=${SKIP_POLL:-"false"}
+
+if [ "${SKIP_POLL}" == "true" ]; then
+    POLL_TIMEOUT=0
+fi
 
 echo "${GITHUB_REF}"
 if [ "$(echo "${GITHUB_REF}" | grep -oE 'pull/')" == "pull/" ]; then
@@ -50,6 +55,7 @@ fi
 
 ci_status="pending"
 
+
 until [[ "$ci_status" != "pending" && "$ci_status" != "running" ]]
 do
    sleep "$POLL_TIMEOUT"
@@ -63,6 +69,9 @@ do
      echo "Checking pipeline status..."
      curl -d '{"state":"pending", "target_url": "'"${ci_web_url}"'", "context": "gitlab-ci"}' -H "Authorization: token ${GITHUB_TOKEN}"  -H "Accept: application/vnd.github.antiope-preview+json" -X POST --silent "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}"  > /dev/null
    fi
+    if [ "${SKIP_POLL}" == "true" ]; then
+        ci_status="success"
+    fi
 done
 
 echo "Pipeline finished with status ${ci_status}"

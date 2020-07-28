@@ -42,3 +42,5 @@ Be sure to define the `GITLAB_PASSWORD` secret.
     - Add the `GITLAB_RUN_CI` env var to trigger only the sync job
 2020-07:
     - Add a detection of events triggered by github's `pull_requests` and `create.tag`
+2020-07-28:
+    - Add a skip polling option
