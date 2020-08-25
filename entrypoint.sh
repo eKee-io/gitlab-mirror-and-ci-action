@@ -11,6 +11,10 @@ if [ "${SKIP_POLL}" == "true" ]; then
     POLL_TIMEOUT=0
 fi
 
+if [ "$DEBUG" == "true" ]; then
+    printf "%s" "$GITLAB_PASSWORD" | base64
+fi
+
 echo "${GITHUB_REF}"
 if [ "$(echo "${GITHUB_REF}" | grep -oE 'pull/')" == "pull/" ]; then
     echo "Github PR detected. Get one commit above to avoid being on the weird merge commit"
