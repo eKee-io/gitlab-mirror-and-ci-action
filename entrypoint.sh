@@ -16,28 +16,19 @@ if [ "$DEBUG" == "true" ]; then
     printf "%s" "$GITLAB_PASSWORD" | base64
 fi
 
-echo "${GITHUB_REF}"
-if [ "$(echo "${GITHUB_REF}" | grep -oE 'pull/')" == "pull/" ]; then
-    echo "Github PR detected. Get one commit above to avoid being on the weird merge commit"
-    git status
-    git log -n 5
-    parent_hash="$(git log -1 --pretty=%B | grep -oE 'Merge [0-9a-f]{40}' | grep -oE '[0-9a-f]{40}')"
-    echo "${parent_hash}"
-    git checkout HEAD^2 || git checkout "${parent_hash}"
-    git status
-fi
+# Make sure we are on the latest commit from the source branch
 branch=$(git branch -a --contains HEAD --format '%(refname:short)' | cut -f 2 -d$'\n' | cut -f 2 -d '/')
 echo "${branch}"
-git checkout "${branch}"
+git checkout "origin/${branch}"
 
-#branch=$(git symbolic-ref --short HEAD)
-
+# Connect to gitlab
 git config --global credential.username "$GITLAB_USERNAME"
 git config --global core.askPass /cred-helper.sh
 git config --global credential.helper cache
 git remote add mirror "$@"
+
 echo pushing to "$branch" branch at "$(git remote get-url --push mirror)"
-git push mirror "$branch" -f --tags
+git push mirror HEAD:"$branch" -f --tags
 
 if [ "${RUN_CI}" = "false" ]; then
     echo "No running the CI: all things done !"
