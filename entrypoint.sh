@@ -17,7 +17,8 @@ if [ "$DEBUG" == "true" ]; then
 fi
 
 # Make sure we are on the latest commit from the source branch
-branch=$(git branch -a --contains HEAD --format '%(refname:short)' | cut -f 2 -d$'\n' | cut -f 2 -d '/')
+# https://stackoverflow.com/a/62239606/8124695
+branch=$(git log -1 --pretty=%D HEAD | sed 's/.*origin\///g;s/, .*//g')
 echo "${branch}"
 git checkout "origin/${branch}"
 
