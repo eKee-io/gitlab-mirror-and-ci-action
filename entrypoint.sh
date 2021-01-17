@@ -18,6 +18,10 @@ fi
 
 # Make sure we are on the latest commit from the source branch
 branch=$(git branch -a --contains HEAD --format '%(refname:short)' | cut -f 2 -d$'\n' | cut -f 2 -d '/')
+if [[ ! -z "${GITHUB_HEAD_REF}" ]]; then
+    branch="${GITHUB_HEAD_REF}"
+fi
+
 echo "${branch}"
 git checkout "origin/${branch}"
 
@@ -28,7 +32,7 @@ git config --global credential.helper cache
 git remote add mirror "$@"
 
 echo pushing to "$branch" branch at "$(git remote get-url --push mirror)"
-git push mirror HEAD:"$branch" -f --tags
+git push mirror HEAD:"refs/heads/$branch" -f --tags
 
 if [ "${RUN_CI}" = "false" ]; then
     echo "No running the CI: all things done !"
